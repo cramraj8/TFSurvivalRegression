@@ -1,0 +1,45 @@
+
+1. functions
+	- read data
+	- model
+
+2. Model features
+	- fully connected layers
+	- L2 reg
+
+3. give input parameters
+
+4. Show predicted output values
+
+5. Now consider the samples of dead patients (so the time of death is know. For others not dead, can't assume the time of death)
+
+6. COde feaures
+	- reduce_mean
+		replaces by
+			reduce_sum
+	- loss function is not based on cross_entropy
+		its based on MSE
+	- How random variance in weights, biases initialization affects the model prediction	(0.1 OR 10)
+	- Optimizer usage
+	- get rid of batch size
+
+7. keep_prob = tf.placeholder("float")
+
+8. Add some visualization
+matplotlib
+
+
+9. Gradient Descend Choises
+	tf.train.GradientDescentOptimizer 
+	tf.train.AdadeltaOptimizer 
+	tf.train.AdagradOptimizer 
+	tf.train.AdagradDAOptimizer 
+	tf.train.MomentumOptimizer 
+	tf.train.AdamOptimizer 
+	tf.train.FtrlOptimizer 
+	tf.train.ProximalGradientDescentOptimizer 
+	tf.train.ProximalAdagradOptimizer 
+	tf.train.RMSPropOptimizer
+
+
+
