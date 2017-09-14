@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io as sio
 from sklearn.utils import shuffle
@@ -29,8 +30,21 @@ Changeable parameters OR variables
        optimizer = tf.train.AdamOptimizer()             ===> Gives definite values
 '''
 
-def read_dataset():
+def read_dataset(name=None):
+    """
+    read_dataset reads the data set, interpret, and return feature, label extracted data set.
 
+  Args:
+    Nothing
+
+  Returns:
+    `Nump array`, extracted feature columns and label column.
+
+  Example:
+    >>> read_dataset()
+    ( [[2.3, 2.4, 6.5],[2.3, 5.4,3.3]], [12, 82] )
+
+    """
     D = sio.loadmat('Brain_Integ.mat')  
     # Extract the fearues and labels
     X = D['Integ_X'].astype('float32')                                          # 560*399   
@@ -46,49 +60,6 @@ def read_dataset():
     print ('Shape of X : ', X.shape)
     print ('Shape of Y : ', Y.shape)
     return (X, Y)
-
-
-
-
-# Model Creation
-def multilayer_perceptron(x, weights, biases):
-    # Hidden layers with RELU activation
-    layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
-    layer_1 = tf.nn.relu(layer_1)
-
-    layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
-    layer_2 = tf.nn.relu(layer_2)
-
-    layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
-    layer_3 = tf.nn.relu(layer_3)
-
-    layer_4 = tf.add(tf.matmul(layer_3, weights['h4']), biases['b4'])
-    layer_4 = tf.nn.relu(layer_4)
-
-    out_layer = tf.matmul(layer_4, weights['out']) + biases['out']
-    return out_layer
-
-
-
-
-
-# layers' weights & biases initialization
-variance = 0.1      # VARIANCE selection highly affects     ## If set to 10, results in NaN values for predication and cost
-weights = {
-    'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], 0, variance)),
-    'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], 0, variance)),
-    'h3': tf.Variable(tf.random_normal([n_hidden_2, n_hidden_3], 0, variance)),
-    'h4': tf.Variable(tf.random_normal([n_hidden_3, n_hidden_4], 0, variance)),
-    'out': tf.Variable(tf.random_normal([n_hidden_4, n_classes], 0, variance))
-}
-biases = {
-    'b1': tf.Variable(tf.random_normal([n_hidden_1], 0, variance)),
-    'b2': tf.Variable(tf.random_normal([n_hidden_2], 0, variance)),
-    'b3': tf.Variable(tf.random_normal([n_hidden_3], 0, variance)),
-    'b4': tf.Variable(tf.random_normal([n_hidden_4], 0, variance)),
-    'out': tf.Variable(tf.random_normal([n_classes], 0, variance))
-}
-
 
 
 
@@ -118,6 +89,47 @@ n_classes = 1                       # Only one output column, represents the pre
 
 
 
+# layers' weights & biases initialization
+variance = 0.1      # VARIANCE selection highly affects     ## If set to 10, results in NaN values for predication and cost
+weights = {
+    'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], 0, variance)),
+    'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], 0, variance)),
+    'h3': tf.Variable(tf.random_normal([n_hidden_2, n_hidden_3], 0, variance)),
+    'h4': tf.Variable(tf.random_normal([n_hidden_3, n_hidden_4], 0, variance)),
+    'out': tf.Variable(tf.random_normal([n_hidden_4, n_classes], 0, variance))
+}
+biases = {
+    'b1': tf.Variable(tf.random_normal([n_hidden_1], 0, variance)),
+    'b2': tf.Variable(tf.random_normal([n_hidden_2], 0, variance)),
+    'b3': tf.Variable(tf.random_normal([n_hidden_3], 0, variance)),
+    'b4': tf.Variable(tf.random_normal([n_hidden_4], 0, variance)),
+    'out': tf.Variable(tf.random_normal([n_classes], 0, variance))
+}
+
+
+
+
+# Model Creation
+def multilayer_perceptron(x, weights, biases, name=None):
+    # Hidden layers with RELU activation
+    layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
+    layer_1 = tf.nn.relu(layer_1)
+
+    layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
+    layer_2 = tf.nn.relu(layer_2)
+
+    layer_3 = tf.add(tf.matmul(layer_2, weights['h3']), biases['b3'])
+    layer_3 = tf.nn.relu(layer_3)
+
+    layer_4 = tf.add(tf.matmul(layer_3, weights['h4']), biases['b4'])
+    layer_4 = tf.nn.relu(layer_4)
+
+    out_layer = tf.matmul(layer_4, weights['out']) + biases['out']
+    return out_layer
+
+
+
+
 # tf Graph input
 x = tf.placeholder("float", [None, None], name='features')      # Set to [, None] to definite value
 y = tf.placeholder("float", [None], name='labels')              # Set to a definite value
@@ -131,7 +143,6 @@ pred = multilayer_perceptron(x, weights, biases)
 loss = tf.reduce_sum(tf.square(tf.transpose(pred)-y), name = "loss")/(2 * total_len)
 cost = tf.reduce_sum(loss + beta * tf.nn.l2_loss(weights['h1']) + beta * tf.nn.l2_loss(weights['h2']) + beta * tf.nn.l2_loss(weights['h3']) + beta * tf.nn.l2_loss(weights['h4'] + beta * tf.nn.l2_loss(weights['out'])))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-
 
 
 
@@ -178,6 +189,13 @@ with tf.Session() as sess:
     print (" *********************************************** ")
 
 
-
+    # plt.plot(X_train[:, 0], sess.run(pred, feed_dict={x: X_train}), label='Fitted line')     # plotting the fitted line; y = mx + c
+    plt.plot(Y_train, sess.run(pred, feed_dict={x: X_train}), 'ro', label='Correlation of Original with Predicted data')                         # for marking points in space of labels and features
+    # plt.plot(Y_train, sess.run(pred, feed_dict={x: X_train}), 'bo', label='Fitted line')     # plotting the fitted line; y = mx + c
+    plt.title('Comparison of the predicting performance')
+    plt.ylabel('Predicted data')
+    plt.xlabel('Original data')
+    plt.legend()    # This enable the label over the plot display
+    plt.show()  # This is important for showing the plotted graph
 
 
