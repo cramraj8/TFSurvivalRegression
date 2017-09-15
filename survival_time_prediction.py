@@ -180,10 +180,7 @@ with tf.Session() as sess:
     for i in range(len(y_test)):
         print ("Labeled VALUE : ", y_test[i], " \t\t\t >>>> Predicted VALUE : ", float(test_predicted_values[i]))
 
-
-
-    
-    # plt.plot(y_train, sess.run(pred, feed_dict={x:x_train}), 'ro', label='Correlation of Original with Predicted data')  
+        
 plt.plot(y_train, pred_out, 'ro', label='Correlation of Original with Predicted train data') 
 # Above is for marking points in space of labels and features
 plt.plot(y_test, test_predicted_values, 'bo', label='Correlation of Original with Predicted test data')
