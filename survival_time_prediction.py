@@ -110,7 +110,7 @@ biases = {
     'out': tf.Variable(tf.random_normal([N_CLASSES], 0, VARIANCE))
 }
 # Model Creation
-def multilayer_perceptron(x, weights, biases, name=None):
+def multilayer_neural_network_model(x, weights, biases, name=None):
     # Hidden layers with RELU activation
     layer_1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
     layer_1 = tf.nn.relu(layer_1)
@@ -138,7 +138,7 @@ y = tf.placeholder("float", [None], name='labels')              # Set to a defin
 
 
 # Construct the grpah for forward pass
-pred = multilayer_perceptron(x, weights, biases)
+pred = multilayer_neural_network_model(x, weights, biases)
 
 loss = tf.reduce_sum(tf.square(tf.transpose(pred)-y), name = "loss")/(2 * total_observations)
 cost = tf.reduce_sum(loss + BETA * tf.nn.l2_loss(weights['h1']) \
