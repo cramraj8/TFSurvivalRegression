@@ -107,15 +107,12 @@ def multilayer_neural_network_model(x, scope="deep_regression"):
         predictions: `Tensor` of shape [1] (scalar) of response.
     """
 
-    with slim.arg_scope([slim.fully_connected],
-                        activation_fn=tf.nn.relu,
+    with slim.arg_scope([slim.fully_connected], activation_fn=tf.nn.relu,
                         weights_regularizer=slim.l2_regularizer(BETA)):
 
-        # Creates a FC layer from the inputs with defined hidden units.
-        net = slim.fully_connected(x, N_HIDDEN_1, scope='fc1')
-        net = slim.fully_connected(net, N_HIDDEN_2, scope='fc2')
-        net = slim.fully_connected(net, N_HIDDEN_3, scope='fc3')
-        net = slim.fully_connected(net, N_HIDDEN_4, scope='fc4')
+        net = slim.stack(x, slim.fully_connected,
+                         [N_HIDDEN_1, N_HIDDEN_2, N_HIDDEN_3, N_HIDDEN_4],
+                         scope='fc')
         predictions = slim.fully_connected(net, 1, activation_fn=None,
                                            scope='prediction')
 
