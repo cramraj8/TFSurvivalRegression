@@ -4,6 +4,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io as sio
+import pandas as pd
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 import tensorflow.contrib.slim as slim
@@ -49,7 +50,7 @@ LEARNING_RATE_DECAY_FACTOR = 0.7
 NUM_OF_EPOCHS_BEFORE_DECAY = 1000
 
 # ============ Network Parameters ============
-HIDDEN_LAYERS = [500, 400, 600, 500]
+HIDDEN_LAYERS = [500, 400, 600, 500, 500, 500]
 N_CLASSES = 1                       # Only one output prediction column
 
 
@@ -68,18 +69,21 @@ def load_data_set(name=None):
     >>> read_dataset()
     ( [[2.3, 2.4, 6.5],[2.3, 5.4,3.3]], [12, 82] )
     """
+    data_feed = pd.read_csv('Brain_Integ_X.csv', skiprows=[0], header=None)
+    labels_feed = pd.read_csv('Brain_Integ_Y.csv', skiprows=[1], header=0)
+    survival = labels_feed['Survival']
+    censored = labels_feed['Censored']
 
-    data = sio.loadmat('Brain_Integ.mat')  # Extract the fearues and labels
-    fearues = data['Integ_X'].astype('float32')                       # 560*399
-    time_of_death = np.asarray([t[0] for t in data['Survival']])\
-        .astype('float32')  # 560*1
-    censored = np.asarray([c[0] for c in data['Censored']])\
-        .astype('int32')    # 560*1
-    censored_time_of_death = time_of_death[censored == 1]
-    # Only retrieve the data from deceased patients where C == 1
-    censored_features = fearues[censored == 1]
-    y = np.asarray(censored_time_of_death)
-    x = np.asarray(censored_features)
+    survival = survival.values
+    censored = censored.values
+    data = data_feed.values
+    data = np.float32(data)
+
+    censored_survival = survival[censored == 1]
+    censored_data = data[censored == 1]
+
+    y = np.asarray(censored_survival)
+    x = np.asarray(censored_data)
 
     print('Shape of X : ', x.shape)
     print('Shape of Y : ', y.shape)
