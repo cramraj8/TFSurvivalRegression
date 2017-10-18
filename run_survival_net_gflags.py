@@ -5,7 +5,6 @@ import numpy as np
 import data_providers
 import visualize
 import dnn_model
-from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from tensorflow.contrib.framework.python.ops.variables import get_or_create_global_step
 from tensorflow.python.platform import tf_logging as logging
@@ -37,6 +36,10 @@ flags.DEFINE_integer('n_classes', 1,
                      'Number of classes in case of classification.')
 flags.DEFINE_integer('display_step', 100,
                      'Displaying step at training.')
+flags.DEFINE_integer('n_layers', 3,
+                     'Number of layers.')
+flags.DEFINE_integer('n_neurons', 500,
+                     'Number of Neurons.')
 
 FLAGS = flags.FLAGS
 slim = tf.contrib.slim
@@ -44,15 +47,22 @@ split = train_test_split
 
 
 def main(args):
-    """Contains TF-Slim code for training a DNN model.
+    """The function for TF-Slim DNN model training.
 
+    This function receives user-given parameters as gflag arguments. Then it
+    creates the tensorflow model-graph, defines loss and optimizer. Finally,
+    creates a training loop and saves the results and logs in the sub-directory.
+
+    Args:
+        args: This brings all gflags given user inputs with default values.
+
+    Returns:
+        None
     """
-
-    HIDDEN_LAYERS = [500, 500, 500]
 
     data_x, data_y = data_providers.data_providers(FLAGS.x_data, FLAGS.y_data)
 
-    data_x, data_y = shuffle(data_x, data_y, random_state=1)
+    # split the train and test data
     x_train, x_test, y_train, y_test = split(data_x, data_y,
                                              test_size=FLAGS.split_ratio,
                                              random_state=420)
@@ -60,6 +70,7 @@ def main(args):
     n_obs = x_train.shape[0]
     n_features = x_train.shape[1]
 
+    # Start building the graph
     tf.reset_default_graph()
     with tf.Graph().as_default() as graph:
         logging.set_verbosity(tf.logging.INFO)
@@ -70,11 +81,17 @@ def main(args):
         n_batches = n_obs / FLAGS.batch_size
         decay_steps = int(FLAGS.n_epochs * n_batches)
 
-        x_batch, y_batch = tf.train.batch([x_train, y_train], batch_size=FLAGS.batch_size,
-                                          allow_smaller_final_batch=True)
+        x_batch, y_batch = tf.train.shuffle_batch([x_train, y_train],
+                                                  batch_size=FLAGS.batch_size,
+                                                  capacity=50000,
+                                                  min_after_dequeue=10000,
+                                                  num_threads=1,
+                                                  allow_smaller_final_batch=True)
 
+        # Create the model and pass the input values batch by batch
+        hidden_layers = [FLAGS.n_neurons] * FLAGS.n_layers
         pred, end_points = dnn_model.multilayer_nn_model(x_batch,
-                                                         HIDDEN_LAYERS,
+                                                         hidden_layers,
                                                          FLAGS.n_classes,
                                                          FLAGS.beta)
 
@@ -86,6 +103,7 @@ def main(args):
                                         decay_rate=FLAGS.lr_decay_rate,
                                         staircase=True)
 
+        # Define loss
         loss = tf.losses.mean_squared_error(tf.squeeze(pred), y_batch)
         tf.losses.add_loss(loss)
         total_loss = tf.losses.get_total_loss()
@@ -94,6 +112,7 @@ def main(args):
 
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=lr)
 
+        # create the back-propagation object
         train_op = slim.learning.create_train_op(
             total_loss,
             optimizer,
@@ -101,6 +120,7 @@ def main(args):
             check_numerics=True,
             summarize_gradients=True)
 
+        # create the training loop
         final = slim.learning.train(
             train_op,
             FLAGS.ckpt_dir,
