@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 
 
-def data_providers(x_data_file='./Brain_Integ_X.csv',
-                   y_data_file='./Brain_Integ_Y.csv'):
+def data_providers(x_data_file='./data/Brain_Integ_X.csv',
+                   y_data_file='./data/Brain_Integ_Y.csv'):
     """
     This function reads the data file and extracts the features and labelled
     values.
@@ -49,6 +49,6 @@ def data_providers(x_data_file='./Brain_Integ_X.csv',
 
 if __name__ == '__main__':
 
-    X_DATA_FILE = './Brain_Integ_X.csv'
-    Y_DATA_FILE = './Brain_Integ_Y.csv'
+    X_DATA_FILE = './data/Brain_Integ_X.csv'
+    Y_DATA_FILE = './data/Brain_Integ_Y.csv'
     data_x, data_y, c = data_providers(X_DATA_FILE, Y_DATA_FILE)
